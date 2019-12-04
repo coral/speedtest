@@ -92,23 +92,27 @@ func (client *Client) Download(server http.Server) (float64, error) {
 		urls = append(urls, downloadURL)
 	}
 
+	var stest = 0
+
 	for u := range urls {
 		dlSpeed, err := client.HTTPClient.DownloadSpeed(urls[u])
-		if err != nil {
-			return 0, err
-		}
+		if err == nil {
+			stest = stest + 1
 
-		if client.HTTPClient.SpeedtestConfig.AlgoType == max {
-			if dlSpeed > maxSpeed {
-				maxSpeed = dlSpeed
+			if client.HTTPClient.SpeedtestConfig.AlgoType == max {
+				if dlSpeed > maxSpeed {
+					maxSpeed = dlSpeed
+				}
+			} else {
+				avgSpeed = avgSpeed + dlSpeed
 			}
 		} else {
-			avgSpeed = avgSpeed + dlSpeed
+			break
 		}
 	}
 
 	if client.HTTPClient.SpeedtestConfig.AlgoType != max {
-		return avgSpeed / float64(len(urls)), nil
+		return avgSpeed / float64(stest), nil
 	}
 	return maxSpeed, nil
 
